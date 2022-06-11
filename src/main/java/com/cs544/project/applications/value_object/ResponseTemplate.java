@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 public class ResponseTemplate {
     private JobApplication jobApplication;
     private Job job;
-    private Company company;
+//    private Company company; the company owns the application, we can leave it out.
 }

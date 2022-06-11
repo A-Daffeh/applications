@@ -17,5 +17,7 @@ public class JobApplication {
     @GeneratedValue
     private Long applicationId;
     private String applicationDomain;
+    private String applicantName; // we can omit the cv upload, and just keep track of few applicant info.
+    private String applicantContact;
     private Long jobId;
 }
