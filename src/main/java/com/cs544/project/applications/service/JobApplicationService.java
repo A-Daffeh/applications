@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @Transactional
 public class JobApplicationService {
@@ -25,12 +28,11 @@ public class JobApplicationService {
 
     public ResponseTemplate getJobApplicationByApplicationId(Long id) {
         ResponseTemplate vo = new ResponseTemplate();
-        JobApplication jobApplication = jobApplicationDao.getJobApplicationByApplicationId(id);
+        JobApplication jobApplication = jobApplicationDao.findById(id).orElse(null);
+        assert jobApplication != null;
         Job job = getJob(jobApplication.getJobId());
-//        Company company = restTemplate.getForObject("http://COMPANY-SERVICE/companies/" + job.getCompanyId(), Company.class);
         vo.setJobApplication(jobApplication);
         vo.setJob(job);
-//        vo.setCompany(company);
         return vo;
     }
 
@@ -42,5 +44,32 @@ public class JobApplicationService {
 
     public void update(JobApplication jobApplication) {
         jobApplicationDao.save(jobApplication);
+    }
+
+    public List<ResponseTemplate> getAllApplications(Long id, String type) {
+        List<JobApplication> jobApplications = type.equals("applicant") ? jobApplicationDao.findByApplicantId(id) : jobApplicationDao.findByJobId(id);
+        return getAllApplicationsOrAllByJobTitle(jobApplications);
+    }
+
+    public List<ResponseTemplate> getAllApplicationsByJobTitle(String jobTitle) {
+        List<JobApplication> jobApplications = jobApplicationDao.findByApplicationDomainIgnoreCase(jobTitle);
+        return getAllApplicationsOrAllByJobTitle(jobApplications);
+    }
+
+    public List<ResponseTemplate> getAllApplicationsOrAllByJobTitle( List<JobApplication> jobApplications) {
+        List<ResponseTemplate> results = new ArrayList<>();
+        jobApplications.forEach(app -> {
+            Job job = getJob(app.getJobId());
+            ResponseTemplate vo = new ResponseTemplate();
+            vo.setJob(job);
+            vo.setJobApplication(app);
+            results.add(vo);
+        });
+
+        return results;
+    }
+
+    public void deleteApplicationForApplicant(Long applicationId) {
+        jobApplicationDao.deleteById(applicationId);
     }
 }
